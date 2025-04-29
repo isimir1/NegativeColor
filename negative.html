@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konversi Foto ke Negatif</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      width: 100%;
+      max-width: 90vw;
+      height: auto;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
+    #downloadBtn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    input[type="file"] {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ubah Foto Menjadi Warna Negatif</h1>
+  <input type="file" id="upload" accept="image/*"><br>
+  <canvas id="canvas"></canvas><br>
+  <button id="downloadBtn">Download Gambar Negatif</button>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    upload.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const img = new Image();
+        img.onload = function () {
+          const maxWidth = window.innerWidth * 0.9;
+          const scale = Math.min(1, maxWidth / img.width);
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          // Proses ke negatif
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          for (let i = 0; i < data.length; i += 4) {
+            data[i] = 255 - data[i];     // R
+            data[i + 1] = 255 - data[i + 1]; // G
+            data[i + 2] = 255 - data[i + 2]; // B
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      const link = document.createElement('a');
+      link.download = 'gambar-negatif.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  </script>
+</body>
+</html>
